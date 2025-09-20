@@ -947,13 +947,16 @@ def api_users_autocomplete():
     if not q:
         return jsonify([])
 
-    sparql = f"""
-    PREFIX schema: <https://schema.org/>
-    SELECT DISTINCT ?u WHERE {{
-      ?u a schema:Person .
-      FILTER(CONTAINS(LCASE(STR(?u)), "{q.replace('"','\\"')}"))
-    }} LIMIT {max(limit,1)}
-    """
+    escaped_q = q.replace('"', '\\"')
+    limit_val = max(limit, 1)
+
+    sparql = (
+        "PREFIX schema: <https://schema.org/>\n"
+        "SELECT DISTINCT ?u WHERE {{\n"
+        "  ?u a schema:Person .\n"
+        "  FILTER(CONTAINS(LCASE(STR(?u)), \"{escaped_q}\"))\n"
+        "}} LIMIT {limit_val}\n"
+    ).format(escaped_q=escaped_q, limit_val=limit_val)
 
     out = []
 
